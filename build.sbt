@@ -5,7 +5,7 @@ scalaVersion in ThisBuild := "2.12.2"
 crossScalaVersions in ThisBuild := List("2.12.2", "2.11.11")
 
 lazy val root = project.in(file("."))
-  .aggregate(js, jvm, slf4j, slack)
+  .aggregate(js, jvm, slf4j, slack, benchmarks)
   .settings(
     publish := {},
     publishLocal := {}
@@ -36,4 +36,13 @@ lazy val slack = project.in(file("slack"))
     name := "scribe-slack",
     libraryDependencies += "com.eed3si9n" %% "gigahorse-asynchttpclient" % "0.3.1",
     libraryDependencies += "com.lihaoyi" %% "upickle" % "0.4.4"
+  )
+
+lazy val benchmarks = project.in(file("benchmarks"))
+  .dependsOn(jvm)
+  .enablePlugins(JmhPlugin)
+  .settings(
+    publishArtifact := false,
+    libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.10.0",
+    libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.10.0"
   )
