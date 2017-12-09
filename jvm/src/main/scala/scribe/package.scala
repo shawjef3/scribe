@@ -13,6 +13,12 @@ package object scribe extends Root with Closeable {
     }
   }
 
+
+  override def flush(): Unit = {
+    if (_asynchronous != null)
+      _asynchronous.flush()
+  }
+
   override protected[scribe] def log(record: LogRecord): Unit = {
     if (_asynchronous == null) {
       super.log(record)

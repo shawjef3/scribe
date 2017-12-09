@@ -8,6 +8,7 @@ trait Root extends SynchronousLogger {
   override val multiplier: Double = 1.0
 
   def enableAsynchronous(): Unit
+  def flush(): Unit
 
   implicit class AnyLogging(value: Any) {
     def logger: Logger = Logger.byName(value.getClass.getSimpleName)

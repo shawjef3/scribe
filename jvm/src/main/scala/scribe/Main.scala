@@ -9,7 +9,7 @@ object Main extends App {
 
   Future {
     for (i <- 0 to Int.MaxValue) {
-      scribe.info(s"asynchronous $i")
+      scribe.info(s"forgotten $i")
       Thread.sleep(1L)
     }
   }
@@ -17,10 +17,11 @@ object Main extends App {
   Await.ready(
     Future {
       for (i <- 0 to 1000)
-        scribe.info(s"synchronous $i")
+        scribe.info(s"awaited $i")
     },
     Duration.Inf
   )
 
   scribe.info("done")
+  scribe.flush()
 }

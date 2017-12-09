@@ -3,6 +3,7 @@ package scribe
 import java.io.Closeable
 import java.util.concurrent._
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
+import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.util.control.NonFatal
 
@@ -56,6 +57,17 @@ class AsyncLoggerSupport(innerLog: LogRecord => Unit) extends Closeable {
           }
         })
       )
+    }
+  }
+
+  @tailrec
+  final def flush(): Unit = {
+    queue.poll() match {
+      case Some(logRecord) =>
+        innerLog(logRecord)
+        flush()
+      case _ =>
+        ()
     }
   }
 
