@@ -28,7 +28,6 @@ object Macros {
 
   def log(c: whitebox.Context)(level: c.Expr[Level], message: c.Tree): c.universe.Tree = {
     import c.universe._
-
     logSpecial(c)(level, message, q"scribe.LogRecord.DefaultStringify")
   }
 

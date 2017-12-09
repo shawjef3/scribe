@@ -14,6 +14,7 @@ class LogRecord private() {
 
   private var _messageObject: Option[Any] = None
   private var _message: Option[String] = None
+  @transient private var _reserved: Boolean = false
 
   def level: Level = _level
   def value: Double = _value
@@ -45,6 +46,10 @@ class LogRecord private() {
     this
   }
 
+  def release(): Unit = {
+    _reserved = false
+  }
+
   override def toString: String = {
     val list = List(
       "level" -> level.name,
@@ -63,9 +68,7 @@ class LogRecord private() {
 object LogRecord {
   val DefaultStringify: Any => String = (v: Any) => String.valueOf(v)
 
-  private val instance = new ThreadLocal[LogRecord] {
-    override def initialValue(): LogRecord = new LogRecord()
-  }
+  private val instance = new ThreadLocal[LogRecord]()
 
   def apply(level: Level,
             value: Double,
@@ -77,7 +80,21 @@ object LogRecord {
             threadName: String = Thread.currentThread().getName,
             timestamp: Long = System.currentTimeMillis(),
             stringify: Any => String = DefaultStringify): LogRecord = {
-    val r = instance.get()
+    var r = instance.get()
+
+    val initThreadLocal = r == null
+
+    if (initThreadLocal || r._reserved) {
+      r = new LogRecord()
+      r._threadId = Thread.currentThread.getId
+      r._threadName = Thread.currentThread.getName
+      if (initThreadLocal) {
+        instance.set(r)
+      }
+    }
+
+    r._reserved = true
+
     r._level = level
     r._value = value
     r._messageFunction = message

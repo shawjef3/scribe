@@ -14,7 +14,7 @@ import scala.language.experimental.macros
   *                   logger (Defaults to 1.0)
   */
 case class Logger(parentName: Option[String] = Some(Logger.rootName),
-                  multiplier: Double = 1.0) extends LoggerSupport {
+                  multiplier: Double = 1.0) extends SynchronousLogger {
   override def name: Option[String] = Logger.name(this)
 
   /**
@@ -25,7 +25,7 @@ case class Logger(parentName: Option[String] = Some(Logger.rootName),
   def update(updater: => Logger): Unit = {
     val updated: Logger = updater
     if (handlers.nonEmpty) {
-      updated.handlers ++= handlers
+      updated._handlers ++= handlers
     }
     Logger.replace(this, updated)
   }

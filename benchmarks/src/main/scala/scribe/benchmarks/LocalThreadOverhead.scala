@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import org.openjdk.jmh.annotations._
-import scribe.Logger
+import scribe.{AsyncLoggerSupport, Logger}
 
 @State(Scope.Thread)
 class LocalThreadOverhead {
@@ -20,19 +20,14 @@ class LocalThreadOverhead {
   scribeLogger.clearHandlers()
   scribeLogger.parent.foreach(_.clearHandlers())
 
-  val durationMillis: Long = 5000L
-
-  def logWithScribe(until: Long, message: => Any): Unit = {
-    while (System.currentTimeMillis() < until) {
-      scribeLogger.info(message)
+  val asyncScribeLogger =
+    new AsyncLoggerSupport {
+      override def multiplier: Double = 1.0
+      override def parentName: Option[String] = None
+      override def name: Option[String] = Some("asyncScribeLogger")
     }
-  }
-
-  def logWithLog4j(until: Long, message: String): Unit = {
-    while (System.currentTimeMillis() < until) {
-      log4jLogger.info(message)
-    }
-  }
+  asyncScribeLogger.clearHandlers()
+  asyncScribeLogger.parent.foreach(_.clearHandlers())
 
   /**
     * Subtract the time of this benchmark from the other benchmarks.
@@ -57,6 +52,18 @@ class LocalThreadOverhead {
     var i = 0
     while (i < 1000) {
       scribeLogger.info("test")
+      i += 1
+    }
+  }
+
+  @Benchmark
+  @BenchmarkMode(Array(Mode.AverageTime))
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @OperationsPerInvocation(1000)
+  def withAsyncScribe(): Unit = {
+    var i = 0
+    while (i < 1000) {
+      asyncScribeLogger.info("test")
       i += 1
     }
   }
