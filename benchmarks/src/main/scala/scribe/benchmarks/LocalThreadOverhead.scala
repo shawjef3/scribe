@@ -10,6 +10,8 @@ import scribe.{AsyncLoggerSupport, LogRecord, Logger, SynchronousLogger}
 @State(Scope.Thread)
 class LocalThreadOverhead {
 
+  System.setProperty("log4j2.contextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector")
+
   scribe.clearHandlers()
 
   Configurator.initialize(ConfigurationBuilderFactory.newConfigurationBuilder().build())

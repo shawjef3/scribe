@@ -43,6 +43,9 @@ lazy val benchmarks = project.in(file("benchmarks"))
   .enablePlugins(JmhPlugin)
   .settings(
     publishArtifact := false,
-    libraryDependencies += "org.apache.logging.log4j" % "log4j-api" % "2.10.0",
-    libraryDependencies += "org.apache.logging.log4j" % "log4j-core" % "2.10.0"
+    libraryDependencies ++= Seq(
+      "org.apache.logging.log4j" % "log4j-api" % "2.10.0",
+      "org.apache.logging.log4j" % "log4j-core" % "2.10.0",
+      "com.lmax" % "disruptor" % "3.3.7"
+    )
   )
