@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import org.openjdk.jmh.annotations._
-import scribe.{AsyncLoggerSupport, Logger}
+import scribe.{AsyncLoggerSupport, LogRecord, Logger, SynchronousLogger}
 
 @State(Scope.Thread)
 class LocalThreadOverhead {
@@ -20,14 +20,20 @@ class LocalThreadOverhead {
   scribeLogger.clearHandlers()
   scribeLogger.parent.foreach(_.clearHandlers())
 
-  val asyncScribeLogger =
-    new AsyncLoggerSupport {
-      override def multiplier: Double = 1.0
+  val asyncScribeLogger = {
+    val a = new AsyncLoggerSupport(Logger(parentName = None).log)
+    new SynchronousLogger {
       override def parentName: Option[String] = None
-      override def name: Option[String] = Some("asyncScribeLogger")
+
+      override def name: Option[String] = None
+
+      override def multiplier: Double = 1.0
+
+      override protected[scribe] def log(record: LogRecord): Unit = {
+        a.log(record)
+      }
     }
-  asyncScribeLogger.clearHandlers()
-  asyncScribeLogger.parent.foreach(_.clearHandlers())
+  }
 
   /**
     * Subtract the time of this benchmark from the other benchmarks.
