@@ -7,17 +7,17 @@
         </Console>
     </Appenders>
     <Appenders>
-        <RandomAccessFile name="log4j" fileName="logs/log4j.log" immediateFlush="false" append="false">
+        <RandomAccessFile name="log4j" fileName="logs/log4j.log" immediateFlush="false">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
         </RandomAccessFile>
-        <RandomAccessFile name="log4s" fileName="logs/log4s.log" immediateFlush="false" append="false">
+        <RandomAccessFile name="log4s" fileName="logs/log4s.log" immediateFlush="false">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
         </RandomAccessFile>
-        <RandomAccessFile name="TraceFile" fileName="logs/log4j-trace.log" immediateFlush="false" append="false">
+        <RandomAccessFile name="TraceFile" fileName="logs/log4j-trace.log" immediateFlush="false">
             <PatternLayout>
                 <Pattern>%d{ISO8601}{GMT} %-5p %C{2} (%F:%L) - %m%n</Pattern>
             </PatternLayout>

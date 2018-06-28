@@ -52,7 +52,7 @@ class LoggingSpeedBenchmark {
     synchronousWriter = writer.FileWriter.simple("scribe.log")
     synchronousLogger = Logger.empty.orphan().withHandler(writer = synchronousWriter)
 
-    log4jLogger = LogManager.getRootLogger
+    log4jLogger = LogManager.getLogger("log4j")
     log4jTraceLogger = LogManager.getLogger("Trace")
 
     log4sLogger = org.log4s.getLogger("scala")
