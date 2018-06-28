@@ -13,21 +13,53 @@ import scribe.handler.AsynchronousLogHandler
 
 // jmh:run -i 3 -wi 3 -f1 -t1 -rf JSON -rff benchmarks.json
 @annotations.State(annotations.Scope.Thread)
+@annotations.Fork(jvmArgs = Array("-Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector"))
 class LoggingSpeedBenchmark {
   assert(LogManager.getRootLogger.isInfoEnabled, "INFO is not enabled in log4j!")
 
-  private lazy val asynchronousWriter = writer.FileWriter.simple("scribe-async.log")
-  private lazy val asynchronousHandler = AsynchronousLogHandler(Formatter.default, asynchronousWriter)
+  private var synchronousWriter: writer.FileWriter = _
+  private var synchronousLogger: Logger = _
 
-  @annotations.Setup(annotations.Level.Trial)
+  private var asynchronousWriter: writer.FileWriter = _
+  private var asynchronousHandler: AsynchronousLogHandler = _
+  private var asynchronousLogger: Logger = _
+
+  private var log4jLogger: org.apache.logging.log4j.Logger = _
+
+  private var log4jTraceLogger: org.apache.logging.log4j.Logger = _
+
+  private var log4sLogger: org.log4s.Logger = _
+
+  private var logbackLogger: org.slf4j.Logger = _
+
+  private var scalaLogger: sc.Logger = _
+
+  @annotations.Setup
   def doSetup(): Unit = {
     ConfigFactory.load()
+
     tinylog.Configurator
       .defaultConfig()
       .removeAllWriters()
       .writer(new tinylog.writers.FileWriter("logs/tiny.log"))
       .level(tinylog.Level.INFO)
       .activate()
+
+    asynchronousWriter =  writer.FileWriter.simple("scribe-async.log")
+    asynchronousHandler = AsynchronousLogHandler(Formatter.default, asynchronousWriter)
+    asynchronousLogger = Logger.empty.orphan().withHandler(asynchronousHandler)
+
+    synchronousWriter = writer.FileWriter.simple("scribe.log")
+    synchronousLogger = Logger.empty.orphan().withHandler(writer = synchronousWriter)
+
+    log4jLogger = LogManager.getRootLogger
+    log4jTraceLogger = LogManager.getLogger("Trace")
+
+    log4sLogger = org.log4s.getLogger("scala")
+
+    logbackLogger = org.slf4j.LoggerFactory.getLogger("logback")
+
+    scalaLogger = sc.Logger("root")
   }
 
   @annotations.Benchmark
@@ -36,15 +68,11 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withScribe(): Unit = {
-    val fileWriter = writer.FileWriter.simple("scribe.log")
-    val logger = Logger.empty.orphan().withHandler(writer = fileWriter)
-
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      synchronousLogger.info("test")
       i += 1
     }
-    fileWriter.dispose()
   }
 
   @annotations.Benchmark
@@ -53,11 +81,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withScribeAsync(): Unit = {
-    val logger = Logger.empty.orphan().withHandler(asynchronousHandler)
-
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      asynchronousLogger.info("test")
       i += 1
     }
   }
@@ -68,10 +94,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withLog4j(): Unit = {
-    val logger = LogManager.getRootLogger
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      log4jLogger.info("test")
       i += 1
     }
   }
@@ -82,10 +107,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withLog4s(): Unit = {
-    val logger = org.log4s.getLogger("scala")
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      log4sLogger.info("test")
       i += 1
     }
   }
@@ -96,10 +120,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withLog4jTrace(): Unit = {
-    val logger = LogManager.getLogger("Trace")
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      log4jTraceLogger.info("test")
       i += 1
     }
   }
@@ -110,10 +133,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withScalaLogging(): Unit = {
-    val logger = sc.Logger("root")
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      scalaLogger.info("test")
       i += 1
     }
   }
@@ -124,10 +146,9 @@ class LoggingSpeedBenchmark {
   @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
   @annotations.OperationsPerInvocation(1000)
   def withLogback(): Unit = {
-    val logger = org.slf4j.LoggerFactory.getLogger("logback")
     var i = 0
     while (i < 1000) {
-      logger.info("test")
+      logbackLogger.info("test")
       i += 1
     }
   }
@@ -160,6 +181,7 @@ class LoggingSpeedBenchmark {
 
   @annotations.TearDown
   def tearDown(): Unit = {
+    synchronousWriter.dispose()
     asynchronousWriter.dispose()
   }
 }
