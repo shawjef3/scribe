@@ -28,8 +28,6 @@ class LoggingSpeedBenchmark {
 
   private var log4jTraceLogger: org.apache.logging.log4j.Logger = _
 
-  private var log4sLogger: org.log4s.Logger = _
-
   private var logbackLogger: org.slf4j.Logger = _
 
   private var scalaLogger: sc.Logger = _
@@ -54,8 +52,6 @@ class LoggingSpeedBenchmark {
 
     log4jLogger = LogManager.getLogger("log4j")
     log4jTraceLogger = LogManager.getLogger("Trace")
-
-    log4sLogger = org.log4s.getLogger("scala")
 
     logbackLogger = org.slf4j.LoggerFactory.getLogger("logback")
 
@@ -97,19 +93,6 @@ class LoggingSpeedBenchmark {
     var i = 0
     while (i < 1000) {
       log4jLogger.info("test")
-      i += 1
-    }
-  }
-
-  @annotations.Benchmark
-  @annotations.BenchmarkMode(Array(annotations.Mode.AverageTime))
-//  @annotations.BenchmarkMode(Array(annotations.Mode.AverageTime, annotations.Mode.SampleTime, annotations.Mode.Throughput))
-  @annotations.OutputTimeUnit(TimeUnit.NANOSECONDS)
-  @annotations.OperationsPerInvocation(1000)
-  def withLog4s(): Unit = {
-    var i = 0
-    while (i < 1000) {
-      log4sLogger.info("test")
       i += 1
     }
   }
